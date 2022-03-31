@@ -57,10 +57,5 @@ Configuration JoinDomain
 
         }
 
-        LocalConfigurationManager {
-
-            RebootNodeIfNeeded = $true
-
-        }
     }
 }
