@@ -50,8 +50,7 @@ Configuration JoinDomain
             Credential = $DomainCreds # Credential to join to domain
         }
 
-        xPendingReboot Reboot1
-        {
+        xPendingReboot Reboot1 {
 
             Name = 'AfterDomainJoin'
 
