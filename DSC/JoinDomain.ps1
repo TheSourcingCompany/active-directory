@@ -30,20 +30,22 @@ Configuration JoinDomain
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
-        $Credential,
+        $Admincreds,
         $DomainName,
         $ComputerName
 
     )
 
     Import-DscResource -Module ComputerManagementDsc
+    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
+
 
     Node localhost
     {
         Computer JoinDomain {
             Name       = $ComputerName
             DomainName = $DomainName
-            Credential = $Credential # Credential to join to domain
+            Credential = $DomainCreds # Credential to join to domain
         }
     }
 }
