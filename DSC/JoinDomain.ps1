@@ -37,6 +37,8 @@ Configuration JoinDomain
     )
 
     Import-DscResource -Module ComputerManagementDsc
+    Import-DscResource -Module xPendingReboot
+
     [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
 
 
@@ -46,6 +48,20 @@ Configuration JoinDomain
             Name       = $ComputerName
             DomainName = $DomainName
             Credential = $DomainCreds # Credential to join to domain
+        }
+
+        xPendingReboot Reboot1
+        {
+
+            Name = 'AfterDomainJoin'
+
+        }
+
+        LocalConfigurationManager
+        {
+
+            RebootNodeIfNeeded = 'True'
+
         }
     }
 }
