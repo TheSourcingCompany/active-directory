@@ -47,6 +47,10 @@ Configuration ConfigureExchange
 
     Node localhost
     {
+        LocalConfigurationManager {
+            RebootNodeIfNeeded = $true
+        }
+
         Computer JoinDomain {
             Name       = $ComputerName
             DomainName = $DomainName
@@ -58,8 +62,6 @@ Configuration ConfigureExchange
             Name = 'AfterDomainJoin'
 
         }
-
-
 
         WindowsFeature NETWCFHTTPActivation45 {
             Ensure = 'Present'
