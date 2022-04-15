@@ -198,6 +198,24 @@ Configuration ConfigureExchange
         }
 
 
+        xDownloadfile vcredist {
+
+            SourcePath               = "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
+            DestinationDirectoryPath = "C:\Temp"
+            Filename                 = "vcredist_x64.exe"
+        }
+
+        Package vcredistInstall {
+            Ensure    = 'Present'
+            Name      = 'vcredist'
+            Path      = 'c:\Temp\vcredist_x64.exe'
+            ProductID = 'A749D8E6-B613-3BE3-8F5F-045C84EBA29B'
+            Arguments = '/q'
+            DependsOn = '[xDownloadfile]vcredist'
+
+        }
+
+
 
         xDownloadfile DownloadNet48 {
 
