@@ -3,18 +3,14 @@
     Import-DscResource -Name xDownloadFile
     Import-DscResource -Name xPendingReboot
 
+    Node Localhost {
 
-
-    Node localhost {
-
-
-        xDownloadFile Office365ODT
+            xDownloadFile Office365ODT
         {
             SourcePath               = "https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_14729-20228.exe"
             DestinationDirectoryPath = "C:\Temp"
             FileName                 = "odt.exe"
         }
-
 
         xDownloadFile Virtual-Desktop-Optimization-Tool
         {
@@ -56,7 +52,7 @@
 
                 Set-Content "2009\Configurationfiles\appxPackages.json" -Value $($AppxPackages | ConvertTo-Json)
 
-                .\Windows_VDOT.ps1 -WindowsVersion 2009 -Optimizations @('All', 'WindowsMediaPlayer', 'AppxPackages', 'ScheduledTasks', 'Autologgers', 'Services', 'NetworkOptimizations', 'LGPO', 'DiskCleanup')  -AcceptEULA
+                .\Windows_VDOT.ps1 -WindowsVersion 2009 -Optimizations @('All', 'WindowsMediaPlayer', 'AppxPackages', 'ScheduledTasks', 'Autologgers', 'Services', 'NetworkOptimizations', 'LGPO')  -AcceptEULA
 
             }
             TestScript = { return $false }
@@ -64,9 +60,14 @@
             DependsOn  = '[xDownloadFile]TeamsWideInstaller'
         }
 
-        WindowsProcess ExtractODT { #ResourceName
-            Arguments = '/quiet /extract:"C:\Temp"'
-            Path      = "C:\Temp\odt.exe"
+                Script ExtractODT {
+            SetScript  = {
+
+             Start-Process -FilePath 'C:\Temp\odt.exe' -ArgumentList '/quiet /extract:"C:\Temp\ODT"' -Wait
+
+            }
+            TestScript = {  Test-path "C:\Temp\ODT\setup.exe" }
+            GetScript  = { "" }
             DependsOn = '[xDownloadFile]Office365ODT'
         }
 
@@ -104,7 +105,7 @@
 
             Ensure    = "Present"
             Name      = "Microsoft 365-apps voor ondernemingen - nl-nl"
-            Path      = "C:\Temp\setup.exe"
+            Path      = "C:\Temp\ODT\setup.exe"
             ProductId = ""
             Arguments = "/configure C:\Temp\Configuration.xml"
             DependsOn = '[File]ConfigurationXML'
@@ -159,7 +160,7 @@
             SetScript  = {
 
                 msiexec /i "C:\Temp\TeamsMachineWideInstaller.msi" /l*v "C:\Temp\TeamsMachineWideInstaller.log" ALLUSER=1
-                start-sleep -seconds 300
+                start-sleep -seconds 60
             }
             TestScript = { return $false }
             GetScript  = { "" }
@@ -177,25 +178,7 @@
             DependsOn  = '[Script]InstallTeamsInstaller'
         }
 
-        xPendingReboot Reboot {
-            Name      = 'BeforeSoftwareInstall'
-            DependsOn = '[Script]SetTimeZone'
-        }
-
-
-
-        <#
-             Package InstallTeamsWideInstaller{
-
-             Ensure = "Present"
-             Path = "C:\Temp\TeamsMachineWideInstaller.msi"
-             ProductId = "{731F6BAA-A986-45A4-8936-7C3AAAAA760B}"
-             Name = "Teams Machine-Wide Installer"
-             Arguments = "/ALLUSER=1"
-             DependsOn = '[Script]RemoveBogusTeamsInstaller'
-         }
-         #>
-
     }
+
 
 }
