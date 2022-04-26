@@ -10,24 +10,24 @@ configuration ConfigureMgmt
             RebootNodeIfNeeded = $true
         }
 
-        WindowsFeature RSATADDS
+        WindowsFeature RSAT-ADDS
         {
             Ensure = "Present"
             Name = "RSAT-ADDS"
         }
 
-        WindowsFeature RSATDNSServer
+        WindowsFeature RSAT-DNS-Server
         {
             Ensure = "Present"
             Name = "RSAT-DNS-Server"
-            DependsOn = "[WindowsFeature]RSATADDSTools"
+            DependsOn = "[WindowsFeature]RSAT-ADDS"
         }
 
         WindowsFeature GPMC 
         {
             Ensure = "Present"
             Name = "GPMC"
-            DependsOn = "[WindowsFeature]RSATDNSServer"
+            DependsOn = "[WindowsFeature]RSAT-DNS-Server"
         }
 
     }
