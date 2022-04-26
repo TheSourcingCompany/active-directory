@@ -6,7 +6,7 @@ configuration ConfigureADBackupDC
         [String]$DomainName,
 
         [Parameter(Mandatory)]
-        [System.Management.Automation.PSCredential]$Admincreds,
+        [System.Management.Automation.PSCredential]$domainAdmincreds,
 
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
@@ -14,7 +14,7 @@ configuration ConfigureADBackupDC
 
     Import-DscResource -ModuleName xStorage, xNetworking, xActiveDirectory, xPendingReboot
 
-    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
+    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($domainAdmincreds.UserName)", $domainAdmincreds.Password)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
 
@@ -27,9 +27,9 @@ configuration ConfigureADBackupDC
 
         xWaitforDisk Disk2
         {
-                DiskNumber = 2
-                RetryIntervalSec = $RetryIntervalSec
-                RetryCount = $RetryCount
+            DiskNumber = 2
+            RetryIntervalSec = $RetryIntervalSec
+            RetryCount = $RetryCount
         }
 
         xDisk ADDataDisk
