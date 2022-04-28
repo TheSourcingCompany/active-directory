@@ -1,7 +1,18 @@
 configuration ConfigureMgmt
 {
-   param
-    ()
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Admincreds,
+        $DomainName,
+        $ComputerName
+    )
+
+    Import-DscResource -Module ComputerManagementDsc, xPendingReboot
+
+    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
 
     Node localhost
     {
@@ -30,5 +41,15 @@ configuration ConfigureMgmt
             DependsOn = "[WindowsFeature]RSAT-DNS-Server"
         }
 
+        Computer JoinDomain {
+            Name       = $ComputerName
+            DomainName = $DomainName
+            Credential = $DomainCreds # Credential to join to domain
+            DependsOn = "[WindowsFeature]GPMC"
+        }
+
+        xPendingReboot Reboot1 {
+            Name = 'AfterDomainJoin'
+        }
     }
 }
