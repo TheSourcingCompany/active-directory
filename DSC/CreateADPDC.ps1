@@ -344,7 +344,7 @@ configuration CreateADPDC
 
         ADUser SvcAADSUser {
             Ensure               = 'Present'
-            UserName             = ADConnectAccountCreds.Username
+            UserName             = $ADConnectAccountCreds.Username
             DisplayName          = 'Service Account Azure ADSync'
             DomainName           = $DomainName
             CannotChangePassword = $true
