@@ -8,6 +8,15 @@ configuration CreateADPDC
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds,
 
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSCredential]$ADConnectAccountCreds,
+
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSCredential]$TestAccountCreds,
+
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSCredential]$DSRMCreds,
+
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30,
 
@@ -139,12 +148,7 @@ configuration CreateADPDC
     [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
-
     
-    $SafeModePassword = New-Object System.Management.Automation.PSCredential -ArgumentList "username", ($(New-SWRandomPassword) | ConvertTo-SecureString -AsPlainText -Force)
-    $tstaccpwd = New-Object System.Management.Automation.PSCredential -ArgumentList "username", ($(New-SWRandomPassword) | ConvertTo-SecureString -AsPlainText -Force)
-    $adsaccpwd = New-Object System.Management.Automation.PSCredential -ArgumentList "username", ($(New-SWRandomPassword) | ConvertTo-SecureString -AsPlainText -Force)
-
     $BedrijfOUs = "Beheer Accounts", "NEH Beheer Accounts", "Contacts", "Disabled Users", "Gebruikers", "Groepen", "Resource Accounts", "Servers", "Service Accounts", "Werkstations"
     $GebruikerOUs = "Test OU", "Test SE"
     $GroepenOUs = "Afdelingen", "Applicatie Groepen", "Distributie Groepen", "Security Groepen"
@@ -222,7 +226,7 @@ configuration CreateADPDC
         ADDomain $DomainName {
             DomainName                    = $DomainName
             Credential                    = $admincreds
-            SafemodeAdministratorPassword = $SafeModePassword
+            SafemodeAdministratorPassword = $DSRMCreds
             ForestMode                    = 'WinThreshold'
             DomainMode                    = 'WinThreshold'
             DatabasePath                  = "F:\NTDS"
@@ -324,7 +328,7 @@ configuration CreateADPDC
 
         ADUser TestNeh {
             Ensure               = 'Present'
-            UserName             = 'testneh'
+            UserName             = $TestAccountCreds.Username
             DisplayName          = 'Test Account NEH'
             DomainName           = $DomainName
             CannotChangePassword = $true
@@ -334,13 +338,13 @@ configuration CreateADPDC
             GivenName            = 'Test Account'
             Surname              = 'NEH'
             Description          = 'Test Account NEH'
-            Password             = $tstaccpwd
+            Password             = $TestAccountCreds
             PSDSCRunasCredential = $admincreds
         }
 
         ADUser SvcAADSUser {
             Ensure               = 'Present'
-            UserName             = 'svc_aads'
+            UserName             = ADConnectAccountCreds.Username
             DisplayName          = 'Service Account Azure ADSync'
             DomainName           = $DomainName
             CannotChangePassword = $true
@@ -350,7 +354,7 @@ configuration CreateADPDC
             GivenName            = 'Service Account'
             Surname              = 'AADS'
             Description          = 'Service Account AADS (NOOIT UITSCHAKELEN!)'
-            Password             = $adsaccpwd
+            Password             = $ADConnectAccountCreds
             PSDSCRunasCredential = $admincreds
         }
 
